@@ -11,4 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:text="START"
+        android:id="@+id/toggle"
+        android:background="#6000aa00"
+        android:layout_gravity="bottom"/>
 </FrameLayout>

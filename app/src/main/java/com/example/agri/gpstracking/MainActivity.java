@@ -11,7 +11,6 @@ import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Location;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -70,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .addAll(gpsTracker.getLatLngs())
                         .strokeColor(Color.RED)
                         .fillColor(0x7F0000FF)
-                        .strokeWidth(1);
+                        .strokeWidth(4);
 
                 googleMap.addPolygon(options);
             }

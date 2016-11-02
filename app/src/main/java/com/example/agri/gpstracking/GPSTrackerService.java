@@ -123,8 +123,8 @@ public class GPSTrackerService extends Service implements GoogleApiClient.Connec
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setFastestInterval(500);
+        mLocationRequest.setInterval(6000);
+        mLocationRequest.setFastestInterval(3000);
 
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }

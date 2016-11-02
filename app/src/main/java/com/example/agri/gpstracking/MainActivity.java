@@ -87,25 +87,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .replace(R.id.map, map, MAP_FRAGMENT_TAG)
                 .commit();
         if (map != null) map.getMapAsync(this);
-        Button button = (Button) findViewById(R.id.toggle);
+        final Button button = (Button) findViewById(R.id.toggle);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (gpsTracker.isStop()){
+                    button.setText("Stop");
+                } else {
+                    button.setText("Start");
+                }
                 gpsTracker.toggle();
             }
         });
 
         LocalBroadcastManager.getInstance(this).registerReceiver(gpsCheck, new IntentFilter(GPSCHECK));
         LocalBroadcastManager.getInstance(this).registerReceiver(stopReq, new IntentFilter(REQUEST_PERMISSION));
-
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            bindGPSTracker();
-        } else {
-            if (Build.VERSION.SDK_INT >=  Build.VERSION_CODES.M)
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CHECK_PERMISSION);
-        }
 
     }
 
@@ -116,12 +112,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap map) {
+
         googleMap = map;
         googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-        /* only for testing */
         googleMap.getUiSettings().setZoomControlsEnabled(true);
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(0.6500, 120.6833), 3);
         googleMap.animateCamera(cameraUpdate);
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            bindGPSTracker();
+            if (googleMap != null && !googleMap.isMyLocationEnabled())
+                googleMap.setMyLocationEnabled(true);
+        } else {
+            if (Build.VERSION.SDK_INT >=  Build.VERSION_CODES.M)
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CHECK_PERMISSION);
+        }
     }
 
     private final ServiceConnection mConnection = new ServiceConnection() {

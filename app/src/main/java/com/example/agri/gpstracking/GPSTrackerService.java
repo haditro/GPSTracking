@@ -3,7 +3,6 @@ package com.example.agri.gpstracking;
 import android.Manifest;
 import android.app.Service;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Binder;
@@ -11,10 +10,10 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -39,6 +38,8 @@ import java.util.List;
 public class GPSTrackerService extends Service implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, ResultCallback<LocationSettingsResult>, LocationListener {
 
+    private static final int M_FIX_ACC = 3;
+
     protected GoogleApiClient mGoogleApiClient;
     protected LocationSettingsRequest mLocationSettingsRequest;
     protected LocationRequest mLocationRequest;
@@ -56,13 +57,16 @@ public class GPSTrackerService extends Service implements GoogleApiClient.Connec
         STOP
     }
 
-
     public void setGPSEnabled(boolean GPSEnabled) {
         this.GPSEnabled = GPSEnabled;
 
         if (GPSEnabled && isTrackRequested) {
             startTracking();
         }
+    }
+
+    public boolean isStop() {
+        return currentState == State.STOP;
     }
 
     public class GPSBinder extends Binder {
@@ -119,8 +123,8 @@ public class GPSTrackerService extends Service implements GoogleApiClient.Connec
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(5000);
-        mLocationRequest.setFastestInterval(2500);
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(500);
 
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
@@ -162,7 +166,7 @@ public class GPSTrackerService extends Service implements GoogleApiClient.Connec
 
     @Override
     public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
-        Log.e("AAAA", "RESULT");
+
         final Status status = locationSettingsResult.getStatus();
         switch (status.getStatusCode()) {
             case LocationSettingsStatusCodes.SUCCESS:
@@ -218,7 +222,11 @@ public class GPSTrackerService extends Service implements GoogleApiClient.Connec
     }
 
     private void startTracking() {
+        locations.clear();
+        latLngs.clear();
+
         currentState = State.START;
+
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -229,8 +237,10 @@ public class GPSTrackerService extends Service implements GoogleApiClient.Connec
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.e("Loc", location.toString());
-        locations.add(location);
-        latLngs.add(new LatLng(location.getLatitude(), location.getLongitude()));
+        Toast.makeText(this, location.toString(), Toast.LENGTH_SHORT).show();
+        if (location.getAccuracy() <= M_FIX_ACC){
+            locations.add(location);
+            latLngs.add(new LatLng(location.getLatitude(), location.getLongitude()));
+        }
     }
 }

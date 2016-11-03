@@ -29,10 +29,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.PolygonOptions;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -41,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     GoogleMap googleMap;
     final String MAP_FRAGMENT_TAG = "map";
     boolean mBound = false;
-    GPSTrackerService gpsTracker;
+    GPSTrackerFuseService gpsTracker;
 
     public static final String GPSCHECK = "gps_check";
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
@@ -65,13 +62,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.e("Tstop", "selesai");
             if (gpsTracker.getLatLngs().size() >= 2) {
                 googleMap.clear();
-                PolygonOptions options = new PolygonOptions()
+                PolylineOptions options = new PolylineOptions()
                         .addAll(gpsTracker.getLatLngs())
-                        .strokeColor(Color.RED)
-                        .fillColor(0x7F0000FF)
-                        .strokeWidth(4);
+                        .color(Color.RED)
+                        .width(4);
 
-                googleMap.addPolygon(options);
+                googleMap.addPolyline(options);
             }
         }
     };
@@ -105,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void bindGPSTracker() {
-        getApplicationContext().bindService(new Intent(this, GPSTrackerService.class),
+        getApplicationContext().bindService(new Intent(this, GPSTrackerFuseService.class),
                 mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -132,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            gpsTracker = ((GPSTrackerService.GPSBinder) iBinder).getService();
+            gpsTracker = ((GPSTrackerFuseService.GPSBinder) iBinder).getService();
             mBound = true;
         }
 

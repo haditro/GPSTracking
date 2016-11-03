@@ -30,6 +30,10 @@
         </activity>
 
         <service
+            android:name=".GPSTrackerFuseService"
+            android:enabled="true" />
+
+        <service
             android:name=".GPSTrackerService"
             android:enabled="true" />
     </application>

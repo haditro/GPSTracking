@@ -65,6 +65,10 @@ public class GPSTrackerService extends Service implements LocationListener {
 
     }
 
+    public boolean isStop() {
+        return currentState == State.STOP;
+    }
+
     enum State {
         START,
         STOP

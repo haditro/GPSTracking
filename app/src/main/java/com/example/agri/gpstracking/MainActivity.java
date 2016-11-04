@@ -38,7 +38,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     GoogleMap googleMap;
     final String MAP_FRAGMENT_TAG = "map";
     boolean mBound = false;
-    GPSTrackerFuseService gpsTracker;
+    GPSTrackerFuseService gpsTrackerFuseService;
+    GPSTrackerService gpsTrackerService;
 
     public static final String GPSCHECK = "gps_check";
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
@@ -60,10 +61,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e("Tstop", "selesai");
-            if (gpsTracker.getLatLngs().size() >= 2) {
+            if (gpsTrackerService.getLatLngs().size() >= 2) {
                 googleMap.clear();
                 PolylineOptions options = new PolylineOptions()
-                        .addAll(gpsTracker.getLatLngs())
+                        .addAll(gpsTrackerService.getLatLngs())
                         .color(Color.RED)
                         .width(4);
 
@@ -86,12 +87,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (gpsTracker.isStop()){
+                if (gpsTrackerService.isStop()){
                     button.setText("Stop");
                 } else {
                     button.setText("Start");
                 }
-                gpsTracker.toggle();
+                gpsTrackerService.toggle();
             }
         });
 
@@ -101,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void bindGPSTracker() {
-        getApplicationContext().bindService(new Intent(this, GPSTrackerFuseService.class),
+        getApplicationContext().bindService(new Intent(this, GPSTrackerService.class),
                 mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -128,14 +129,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            gpsTracker = ((GPSTrackerFuseService.GPSBinder) iBinder).getService();
+            gpsTrackerService = ((GPSTrackerService.GPSBinder) iBinder).getService();
             mBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             mBound = false;
-            gpsTracker = null;
+            gpsTrackerService = null;
         }
     };
 
@@ -157,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         Log.i("ioi", "User agreed to make required location settings changes.");
-                        gpsTracker.setGPSEnabled(true);
+//                        gpsTrackerService.setGPSEnabled(true);
                         break;
                     case Activity.RESULT_CANCELED:
                         Log.i("ioi", "User chose not to make required location settings changes.");

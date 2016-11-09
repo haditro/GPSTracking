@@ -36,6 +36,10 @@
         <service
             android:name=".GPSTrackerService"
             android:enabled="true" />
+
+        <service
+            android:name=".GPSTrackerKalmanService"
+            android:enabled="true" />
     </application>
 
 </manifest>

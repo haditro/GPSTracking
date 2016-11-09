@@ -37,11 +37,11 @@ public class GPSTrackerKalmanService extends Service implements LocationListener
     private List<LatLng> kalmans;
     private List<LatLng> latLngs;
     private Location currentLocation;
-    private final int MIN_ACCURACY = 2;
+    private final int MIN_NOISE = 2;
     private float velocity;
     private long latestTimestamp;
-    private double lat;
-    private double lng;
+    private double kalmanLatitude;
+    private double kalmanLongitude;
     private float variance;
 
     @Override
@@ -50,13 +50,13 @@ public class GPSTrackerKalmanService extends Service implements LocationListener
 //        if (location.getAccuracy() <= M_FIX_ACC){
         long diffTime = currentLocation != null ?
                 (location.getTime() - currentLocation.getTime()) : 0;
-        if (Double.compare(lat, 0.0) == 0 && Double.compare(lng, 0.0) == 0) {
-            lat = location.getLatitude();
-            lng = location.getLongitude();
+        if (Double.compare(kalmanLatitude, 0.0) == 0 && Double.compare(kalmanLongitude, 0.0) == 0) {
+            kalmanLatitude = location.getLatitude();
+            kalmanLongitude = location.getLongitude();
         }
         process(location.getLatitude(), location.getLongitude(), location.getAccuracy(),
                 location.getTime());
-        kalmans.add(new LatLng(lat, lng));
+        kalmans.add(new LatLng(kalmanLatitude, kalmanLongitude));
         if (diffTime >= 0 && diffTime <= 6000) {
             locations.add(location);
             latLngs.add(new LatLng(location.getLatitude(), location.getLongitude()));
@@ -165,23 +165,17 @@ public class GPSTrackerKalmanService extends Service implements LocationListener
         return latLngs;
     }
 
-    public void process(double lat_measurement, double lng_measurement, float accuracy, long currentTimestamp) {
-        if (accuracy < MIN_ACCURACY) accuracy = MIN_ACCURACY;
+    public void process(double currentLat, double currentLng, float noise, long currentTimestamp) {
+        if (noise < MIN_NOISE) noise = MIN_NOISE;
         long timeDiff = currentTimestamp - this.latestTimestamp;
         if (timeDiff > 0) {
-            // time has moved on, so the uncertainty in the current position increases
             variance += timeDiff * velocity * velocity / 1000;
             this.latestTimestamp = currentTimestamp;
             // TO DO: USE VELOCITY INFORMATION HERE TO GET A BETTER ESTIMATE OF CURRENT POSITION
         }
-
-        // Kalman gain matrix K = Covarariance * Inverse(Covariance + MeasurementVariance)
-        // NB: because K is dimensionless, it doesn't matter that variance has different units to lat and lng
-        float K = variance / (variance + accuracy * accuracy);
-        // apply K
-        lat += K * (lat_measurement - lat);
-        lng += K * (lng_measurement - lng);
-        // new Covarariance  matrix is (IdentityMatrix - K) * Covarariance
+        float K = variance / (variance + noise * noise);
+        kalmanLatitude += K * (currentLat - kalmanLatitude);
+        kalmanLongitude += K * (currentLng - kalmanLongitude);
         variance = (1 - K) * variance;
     }
 }

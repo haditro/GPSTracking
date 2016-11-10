@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e("Tstop", "selesai");
+            writeDataToFile(gpsTrackerKalmanService.getLatLngs());
             if (gpsTrackerKalmanService.getLatLngs().size() >= 2) {
                 googleMap.clear();
                 PolylineOptions options = new PolylineOptions()
@@ -83,8 +84,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .color(Color.GREEN)
                         .width(8);
                 googleMap.addPolyline(options);
-
-                writeDataToFile(gpsTrackerKalmanService.getLatLngs());
             }
         }
     };
@@ -194,13 +193,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void writeDataToFile(List<LatLng> latLngs){
+        Log.e("WRITE", ""+latLngs.size());
         File root = new File(Environment.getExternalStorageDirectory().getPath(), "GPSTRACK/Documents");
-        if (!root.exists())
-            root.mkdirs();
+        if (!root.exists()) {
+            Log.e("FILE", "Not exist "+root.mkdirs());
+        } else
+            Log.e("FILE", "EXIST");
 
         File doc = new File(root, System.currentTimeMillis()+".txt");
 
         try {
+            Log.e("WRITE", "START");
             FileOutputStream fo = new FileOutputStream(doc);
             PrintWriter pw = new PrintWriter(fo);
             pw.println("RECORD DATA");
@@ -211,9 +214,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             pw.close();
             fo.close();
         } catch (FileNotFoundException e) {
+            Log.e("ERROR", e.getLocalizedMessage());
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+            Log.e("ERROR ioi", e.getLocalizedMessage());
         }
     }
 }

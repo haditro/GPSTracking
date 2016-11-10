@@ -12,6 +12,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -30,6 +31,13 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -75,6 +83,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .color(Color.GREEN)
                         .width(8);
                 googleMap.addPolyline(options);
+
+                writeDataToFile(gpsTrackerKalmanService.getLatLngs());
             }
         }
     };
@@ -180,6 +190,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 bindGPSTracker();
             }
+        }
+    }
+
+    private void writeDataToFile(List<LatLng> latLngs){
+        File root = new File(Environment.getExternalStorageDirectory().getPath(), "GPSTRACK/Documents");
+        if (!root.exists())
+            root.mkdirs();
+
+        File doc = new File(root, System.currentTimeMillis()+".txt");
+
+        try {
+            FileOutputStream fo = new FileOutputStream(doc);
+            PrintWriter pw = new PrintWriter(fo);
+            pw.println("RECORD DATA");
+            for (LatLng latLng : latLngs){
+                pw.println(latLng.toString());
+            }
+            pw.flush();
+            pw.close();
+            fo.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -86,7 +86,7 @@ public class GPSTrackerKalmanService extends Service implements LocationListener
 
     @Override
     public void onNmeaReceived(long l, String s) {
-        Log.d("MO", s + " " + l);
+        Log.d("Nmea", s + " timestamp:" + l);
     }
 
     enum State {

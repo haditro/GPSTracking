@@ -18,6 +18,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.agri.gpstracking.lib.KalmanLocationManager;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -29,6 +30,9 @@ import java.util.List;
 
 public class GPSTrackerKalmanService extends Service implements LocationListener, GpsStatus.NmeaListener {
 
+    private static final long FILTER_TIME = 200;
+    private static final long GPS_TIME = 1000;
+    private static final long NET_TIME = 5000;
     private final IBinder mBinder = new GPSBinder();
     private LocationManager locationManager;
     private State currentState;
@@ -37,7 +41,8 @@ public class GPSTrackerKalmanService extends Service implements LocationListener
     private List<LatLng> kalmans;
     private List<LatLng> latLngs;
     private Location currentLocation;
-    private final int MIN_NOISE = 2;
+    private KalmanLocationManager mKalmanLocationManager;
+    private final int MIN_NOISE = 1;
     private float velocity;
     private long latestTimestamp;
     private double kalmanLatitude;
@@ -86,7 +91,17 @@ public class GPSTrackerKalmanService extends Service implements LocationListener
 
     @Override
     public void onNmeaReceived(long l, String s) {
-        Log.d("Nmea", s + " timestamp:" + l);
+        // TODO preprocess NMEA to create better location
+        Location location = processNMEA(s);
+        Log.d("MO", s + " " + l);
+    }
+
+    private Location processNMEA(String s) {
+        return null;
+    }
+
+    public List<LatLng> getKalmans() {
+        return kalmans;
     }
 
     enum State {
@@ -116,6 +131,7 @@ public class GPSTrackerKalmanService extends Service implements LocationListener
     public void onCreate() {
         super.onCreate();
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        mKalmanLocationManager = new KalmanLocationManager(this);
         currentState = State.STOP;
         latLngs = new ArrayList<>();
         locations = new ArrayList<>();
@@ -155,6 +171,9 @@ public class GPSTrackerKalmanService extends Service implements LocationListener
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
+
+//            mKalmanLocationManager.requestLocationUpdates(
+//                    KalmanLocationManager.UseProvider.GPS_AND_NET, FILTER_TIME, GPS_TIME, NET_TIME, this, true);
             locationManager.addNmeaListener(this);
             locationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER, 0, 0, this);
@@ -166,7 +185,6 @@ public class GPSTrackerKalmanService extends Service implements LocationListener
     }
 
     public void process(double currentLat, double currentLng, float noise, long currentTimestamp) {
-        if (noise < MIN_NOISE) noise = MIN_NOISE;
         long timeDiff = currentTimestamp - this.latestTimestamp;
         if (timeDiff > 0) {
             variance += timeDiff * velocity * velocity / 1000;

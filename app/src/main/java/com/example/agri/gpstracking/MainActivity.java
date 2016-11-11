@@ -86,6 +86,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .color(Color.GREEN)
                         .width(8);
                 googleMap.addPolyline(options);
+
+                options = new PolylineOptions()
+                        .addAll(gpsTrackerKalmanService.getKalmanManagers())
+                        .color(Color.BLUE)
+                        .width(8);
+                googleMap.addPolyline(options);
             }
         }
     };

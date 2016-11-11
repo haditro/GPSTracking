@@ -31,6 +31,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -207,9 +209,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             FileOutputStream fo = new FileOutputStream(doc);
             PrintWriter pw = new PrintWriter(fo);
             pw.println("RECORD DATA");
-            for (LatLng latLng : latLngs){
-                pw.println(latLng.toString());
-            }
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            pw.print(gson.toJson(latLngs));
+            pw.println();
             pw.flush();
             pw.close();
             fo.close();

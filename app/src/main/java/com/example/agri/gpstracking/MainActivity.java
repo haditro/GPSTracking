@@ -11,6 +11,7 @@ import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
@@ -72,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e("Tstop", "selesai");
-            writeDataToFile(gpsTrackerKalmanService.getLatLngs());
+            writeDataToFile(gpsTrackerKalmanService.getLocations());
             if (gpsTrackerKalmanService.getLatLngs().size() >= 2) {
                 googleMap.clear();
                 PolylineOptions options = new PolylineOptions()
@@ -200,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void writeDataToFile(List<LatLng> latLngs){
+    private void writeDataToFile(List<Location> latLngs){
         Log.e("WRITE", ""+latLngs.size());
         File root = new File(Environment.getExternalStorageDirectory().getPath(), "GPSTRACK/Documents");
         if (!root.exists()) {

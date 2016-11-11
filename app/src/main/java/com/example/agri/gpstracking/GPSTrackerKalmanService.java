@@ -288,6 +288,10 @@ public class GPSTrackerKalmanService extends Service implements LocationListener
         return latLngs;
     }
 
+    public List<Location> getLocations(){
+        return locations;
+    }
+
     public void process(double currentLat, double currentLng, float noise, float currentV, long currentTimestamp) {
         long timeDiff = currentTimestamp - this.latestTimestamp;
         if (timeDiff > 0) {
